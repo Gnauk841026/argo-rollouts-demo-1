@@ -14,10 +14,6 @@ spec:
         - setWeight: 20
         - pause: {}
         # 第二步：運行 AnalysisTemplate 來自動驗證
-        - analysis:
-            # 這裡引用了你的 AnalysisTemplate
-            templates:
-              - templateName: nginx-traffic-analysis
             # 傳遞參數給 AnalysisTemplate，讓它知道要驗證的目標權重
             args:
               - name: weight
@@ -28,9 +24,6 @@ spec:
         # 第四步：將 40% 的流量導向新版本
         - setWeight: 40
         # 第五步：再次自動驗證
-        - analysis:
-            templates:
-              - templateName: nginx-traffic-analysis
             args:
               - name: weight
                 value: "40"
