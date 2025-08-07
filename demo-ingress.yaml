@@ -1,0 +1,22 @@
+# 2. 你手動創建的唯一 Ingress
+# 這個 Ingress 會將外部流量導向上面的 `rollouts-demo` Service。
+# Rollout 物件會引用這個 Ingress，並動態修改它的註解。
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rollouts-demo-ingress # 這個名稱會被 Rollout 物件引用
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: rollouts-demo.evanlab.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rollouts-demo-stable
+                port:
+                  number: 80
