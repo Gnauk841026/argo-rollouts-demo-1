@@ -1,22 +1,18 @@
-# 2. 你手動創建的唯一 Ingress
-# 這個 Ingress 會將外部流量導向上面的 `rollouts-demo` Service。
-# Rollout 物件會引用這個 Ingress，並動態修改它的註解。
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+# ingressroute.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
 metadata:
-  name: rollouts-demo-ingress # 這個名稱會被 Rollout 物件引用
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+  name: rollouts-demo-ingress
+  namespace: rollouts-demo     # ← 換成你的命名空間
 spec:
-  ingressClassName: nginx
-  rules:
-    - host: rollouts-demo.evanlab.dev
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: rollouts-demo-stable
-                port:
-                  number: 80
+  entryPoints:
+    - web                      # 有啟用 TLS 就加 websecure
+    # - websecure
+  routes:
+    - match: Host(`rollouts-demo.evanlab.dev`) && PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: rollouts-demo  # 指向上面的「TraefikService(Weighted)」
+          kind: TraefikService
+  # 如需 TLS，可加：
+  # tls: {}
