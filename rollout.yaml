@@ -1,4 +1,3 @@
-# rollouts-demo.yaml (整合了 AnalysisTemplate)
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
@@ -10,29 +9,12 @@ spec:
       canaryService: rollouts-demo-canary
       stableService: rollouts-demo-stable
       steps:
-        # 第一步：將 20% 的流量導向新版本
         - setWeight: 20
         - pause: {}
-        # 第二步：運行 AnalysisTemplate 來自動驗證
-            # 傳遞參數給 AnalysisTemplate，讓它知道要驗證的目標權重
-            args:
-              - name: weight
-                value: "20"
-        # 第三步：手動或自動暫停，讓你手動驗證
-        - pause: {}
-
-        # 第四步：將 40% 的流量導向新版本
         - setWeight: 40
-        # 第五步：再次自動驗證
-            args:
-              - name: weight
-                value: "40"
         - pause: { duration: 10m }
-
-        # 第六步：將 100% 的流量導向新版本
         - setWeight: 100
         - pause: { duration: 10m }
-
       trafficRouting:
         nginx:
           stableIngress: rollouts-demo-ingress
@@ -47,7 +29,7 @@ spec:
     spec:
       containers:
         - name: rollouts-demo
-          image: argoproj/rollouts-demo:blue # 這裡的 image 會隨著新版本更新
+          image: argoproj/rollouts-demo:blue
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
