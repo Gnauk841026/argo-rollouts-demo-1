@@ -26,10 +26,21 @@ spec:
     metadata:
       labels:
         app: rollouts-demo
+    # rollout.yaml（節錄）  
     spec:
-      containers:
-        - name: rollouts-demo
-          image: argoproj/rollouts-demo:blue
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
+      strategy:
+        canary:
+          canaryService: rollouts-demo-canary
+          stableService: rollouts-demo-stable
+          steps:
+            - setWeight: 20
+            - pause: {}
+            - setWeight: 40
+            - pause: { duration: 10m }
+            - setWeight: 100
+            - pause: { duration: 10m }
+          trafficRouting:
+            traefik:
+              # 這個名字要對到下方「加權的 TraefikService」
+              weightedTraefikServiceName: rollouts-demo
+              # （如需跨命名空間，可加 namespace: <ns>）
