@@ -2,45 +2,35 @@ apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: rollouts-demo
+  namespace: rollouts-demo
 spec:
   replicas: 5
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: rollouts-demo
   strategy:
     canary:
       canaryService: rollouts-demo-canary
       stableService: rollouts-demo-stable
       steps:
         - setWeight: 20
-        - pause: {}
+        - pause: {duration: 20s}
         - setWeight: 40
-        - pause: { duration: 10m }
+        - pause: { duration: 20s }
         - setWeight: 100
-        - pause: { duration: 10m }
+        - pause: { duration: 20s }
       trafficRouting:
-        nginx:
-          stableIngress: rollouts-demo-ingress
-  revisionHistoryLimit: 2
-  selector:
-    matchLabels:
-      app: rollouts-demo
+        traefik:
+          weightedTraefikServiceName: rollouts-demo   # 對應 (3) 的 TraefikService 名稱
   template:
     metadata:
       labels:
         app: rollouts-demo
-    # rollout.yaml（節錄）  
     spec:
-      strategy:
-        canary:
-          canaryService: rollouts-demo-canary
-          stableService: rollouts-demo-stable
-          steps:
-            - setWeight: 20
-            - pause: {}
-            - setWeight: 40
-            - pause: { duration: 10m }
-            - setWeight: 100
-            - pause: { duration: 10m }
-          trafficRouting:
-            traefik:
-              # 這個名字要對到下方「加權的 TraefikService」
-              weightedTraefikServiceName: rollouts-demo
-              # （如需跨命名空間，可加 namespace: <ns>）
+      containers:
+        - name: rollouts-demo
+          image: argoproj/rollouts-demo:blue   # 發版時改成 :green 等即可觸發
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
