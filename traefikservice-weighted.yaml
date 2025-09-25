@@ -1,0 +1,15 @@
+# traefikservice-weighted.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: TraefikService
+metadata:
+  name: rollouts-demo
+  namespace: rollouts-demo     # ← 請換成你的命名空間
+spec:
+  weighted:
+    services:
+      - name: rollouts-demo-stable
+        port: 80
+        weight: 100            # 初始 100%
+      - name: rollouts-demo-canary
+        port: 80
+        weight: 0              # 初始 0%，之後由 Rollouts 調整
